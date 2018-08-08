@@ -1,2 +1,1 @@
-# msom2018
-MSOM Cainiao data driven competition
+## MSOM Cainiao data driven competition
