@@ -976,8 +976,7 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
                         + z
-                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]
-                                + p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
+                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
 
 
   tic()
@@ -1312,8 +1311,7 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
                         + z
-                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]
-                               + p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
+                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
 
   tic()
   status = solve(model)
