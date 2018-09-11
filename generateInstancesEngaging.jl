@@ -40,7 +40,7 @@ for instance=1:numInstances
   #
   ndiff = 1
   targets = zeros(ndiff)
-  targets[1] = 400
+  targets[1] = 1000
 
   # First try, item 57734, week1, prediction O (orders time series only)
   # 90% chance, demand > 40
@@ -57,11 +57,12 @@ for instance=1:numInstances
   case = mod(instance, ndiff) == 0 ? ndiff : mod(instance, ndiff)
   numNodesTarget = targets[case]
 
-  numLevels = 3
+  numLevels = 4
   numChildrenPerLevel = zeros(numLevels);
   numChildrenPerLevel[1] = 1; # numChildrenPerLevel[i] is the number of children per node in level i-1
   numChildrenPerLevel[2] = 50;
   numChildrenPerLevel[3] = rand(1:30)
+  numChildrenPerLevel[4] = rand(1:50)
 
   # implement this function
   (numNodes, Atree, nodeLevel, pc, supplyNodes, demandNodes) = randomTreeByN(numNodesTarget, numChildrenPerLevel);
@@ -71,7 +72,7 @@ for instance=1:numInstances
 
   numSupplyNodes = length(find(supplyNodes))
   numDemandNodes = length(find(demandNodes))
-  
+
   b = 100 # demand loss penalty
   h_low = (b-1)*rand()*0.1
   #h_high = h_low + (b-h_low)*rand()
@@ -146,7 +147,19 @@ for instance=1:numInstances
 
   dvar = zeros(numNodes);
   for i in find(demandNodes)
-    dvar[i] = (Dhigh - Dlow) / (numDemandNodes * intensity) * rand() * 2
+    dvar[i] = (Dhigh - Dlow) / (numDemandNodes * intensity) * rand()
+  end
+
+  dvar2 = zeros(numNodes)
+  for i in find(demandNodes)
+    dvar2[i] = (Dhigh - Dlow) / (numDemandNodes * intensity) * rand()
+  end
+
+  p_low = zeros(numNodes)
+  p_high = zeros(numNodes)
+  for i in find(demandNodes)
+    p_low[i] = rand() * 100
+    p_high[i] = p_low[i] * (1 + rand() * 0.5)
   end
 
   dLossPenalty = b * ones(numNodes)
@@ -336,7 +349,8 @@ for instance=1:numInstances
   # Demand: node index, dmean, dvar, lossPenalty, Γ
   demandFile = open(string(dir,"demand.txt"), "w");
   for i=1:length(dmean)
-    write(demandFile, string(i,",",dmean[i],",",dvar[i],",",dLossPenalty[i],",",Γ[i],",",survivability),"\n")
+    write(demandFile, string(i,",",dmean[i],",",dvar[i],",",dLossPenalty[i],",",Γ[i],",",survivability
+                             ,",",dvar2[i],",",p_low[i],",",p_high[i]),"\n")
   end
   close(demandFile)
 
@@ -351,10 +365,11 @@ for instance=1:numInstances
   xreturn = zeros(numNodes);
   println("**********")
 
-  println(string("instance, numNodes, numLevels, intensity, h_low, h_high, f_root, survivability, pArc, numFullArcs, numTreeArcs, numCapacityGroups, alpha, ",
+  println(string("instance, numNodes, numLevels, intensity, h_low, h_high, f_root, survivability, pArc, numFullArcs, numTreeArcs, numCapacityGroups, alpha, avg dvar, avg dvar2, avg price low, avg price high; ",
                  instance, ", ", numNodes, ", ", numLevels, ", ", intensity, ", ", h_low, ", ",
                  h_high, ", ", f_root, ", ", survivability, ", ", pArc, ", ", numTreeArcs, ", ",
-                 numFullArcs, ", ", numCapacityGroups, ", ", α))
+                 numFullArcs, ", ", numCapacityGroups, ", ", α, sum(dvar)/numDemandNodes, ", ",
+                 sum(dvar2)/numDemandNodes, , ", ", sum(p_low)/numDemandNodes, ", ", sum(p_high)/numDemandNodes))
 
 end
 

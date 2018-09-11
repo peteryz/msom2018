@@ -851,12 +851,16 @@ end
 # offspr: Dict(), root -> [offsprings]
 # offsprNr: contains root too
 #
-function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptree, parent, kids, offspr, offsprNr, h, b, c, dmean, dvar, F0return, Fdreturn, xreturn, solveTime, instance)
+function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptree, parent, kids, offspr, offsprNr, h, b, c, dmean, dvar, dvar2, p_low, p_high, F0return, Fdreturn, xreturn, solveTime, instance)
   model = RobustModel(solver=GurobiSolver(Method=2, Crossover=0, BarConvTol=0.000001));
   #model = RobustModel();
 
   # Set up variables
   @variable(model, x[1:n] >= 0); # inventory decisions
+  @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
+  @constraint(model, price_lever >= 0) # price
+  @constraint(model, price_lever <= 1) # price
+
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
   F0Indices = String[]
@@ -913,9 +917,9 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   # demand satisfaction constraints, deterministic version since only involve \xi_j
   for j=(nS+1):n
     # ξ_j = 1
-    @constraint(model, x[j] + sum([(P[i,j] == 1 ? Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"] : 0 ) for i=1:n]) + Sd["$(j)"] + S0["$(j)"] >= dmean[j] + dvar[j])
+    @constraint(model, x[j] + sum([(P[i,j] == 1 ? Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"] : 0 ) for i=1:n]) + Sd["$(j)"] + S0["$(j)"] >= dmean[j] + dvar[j] + dvar2[j] * (1-price_lever[j]))
     # ξ_j = 0
-    @constraint(model, x[j] + sum([(P[i,j] == 1 ? F0["$(i)_$(j)"] : 0 ) for i=1:n]) + S0["$(j)"] >= dmean[j])
+    @constraint(model, x[j] + sum([(P[i,j] == 1 ? F0["$(i)_$(j)"] : 0 ) for i=1:n]) + S0["$(j)"] >= dmean[j] + dvar2[j] * (1-price_lever[j]))
   end
 
   ## generalized capacity - old
@@ -971,7 +975,10 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   # Remember: objectives must be certain.
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
-                        + z)
+                        + z
+                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]
+                                + p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
+
 
   tic()
   status = solve(model)
@@ -1171,12 +1178,16 @@ end
 # kids: Dict(), parent -> [kids]
 # offspr: Dict(), root -> [offsprings]
 # offsprNr: contains root too
-function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptree, parent, kids, offsprFull, offspr, offsprNr, h, b, c, dmean, dvar, F0return, Fdreturn, xreturn, solveTime, instance)
+function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptree, parent, kids, offsprFull, offspr, offsprNr, h, b, c, dmean, dvar, dvar2, p_low, p_high, F0return, Fdreturn, xreturn, solveTime, instance)
   model = RobustModel(solver=GurobiSolver(Method=2, Crossover=0, BarConvTol=0.000001));
   #model = RobustModel();
 
   # Set up variables
   @variable(model, x[1:n] >= 0); # inventory decisions
+  @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
+  @constraint(model, price_lever >= 0) # price
+  @constraint(model, price_lever <= 1) # price
+
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
   F0Indices = String[]
@@ -1218,9 +1229,9 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   # demand satisfaction constraints, deterministic version since only involve \xi_j
   for j=(nS+1):n
     # ξ_j = 1
-    @constraint(model, x[j] + sum([(P[i,j] == 1 ? Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"] : 0 ) for i=1:n]) + Sd["$(j)"] + S0["$(j)"] >= dmean[j] + dvar[j])
+    @constraint(model, x[j] + sum([(P[i,j] == 1 ? Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"] : 0 ) for i=1:n]) + Sd["$(j)"] + S0["$(j)"] >= dmean[j] + dvar[j] + dvar2[j] * (1-price_lever[j])) # price adjusted
     # ξ_j = 0
-    @constraint(model, x[j] + sum([(P[i,j] == 1 ? F0["$(i)_$(j)"] : 0 ) for i=1:n]) + S0["$(j)"] >= dmean[j])
+    @constraint(model, x[j] + sum([(P[i,j] == 1 ? F0["$(i)_$(j)"] : 0 ) for i=1:n]) + S0["$(j)"] >= dmean[j] + dvar2[j] * (1-price_lever[j])) # price adjusted
   end
 
   ## generalized capacity - old
@@ -1300,7 +1311,9 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   # generalized capacity constraints
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
-                        + z)
+                        + z
+                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]
+                               + p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
 
   tic()
   status = solve(model)

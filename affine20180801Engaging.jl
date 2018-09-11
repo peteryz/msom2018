@@ -154,6 +154,9 @@ for instance = 1:numInstances
   dvar = zeros(numNodes)
   dLossPenalty = zeros(numNodes)
   Γ = zeros(numNodes)
+  dvar2 = zeros(numNodes)
+  p_low = zeros(numNodes)
+  p_high = zeros(numNodes)
   open(string(dir,"demand.txt")) do file
     lines = readlines(file)
     for l in lines
@@ -168,6 +171,9 @@ for instance = 1:numInstances
       dvar[i] = dv
       dLossPenalty[i] = b
       Γ[i] = γ
+      dvar2[i] = input[7]
+      p_low[i] = input[8]
+      p_high[i] = input[9]
     end
   end
 
@@ -251,8 +257,8 @@ for instance = 1:numInstances
   #affinePathObj[instance,1] = affinePathLocalFS(numNodes, numSupplyNodes, Γ, Atree, Ptree, invCost, dLossPenalty, PCtree, dmean, dvar, F0return, Fdreturn, affine_xreturn, affinePathSolTime, instance);
   #affinePathObj[instance,2] = affinePathLocalFS(numNodes, numSupplyNodes, Γ, Atree, Pfull, invCost, dLossPenalty, PCfull, dmean, dvar, F0return, Fdreturn, affine_xreturn, affinePathSolTime, instance);
 
-  affineXiTreeObj[instance,1] = affineXiTree(numNodes, numSupplyNodes, numCapacityGroups, capCostTree, capPathsTree, Γ, Atree, Ptree, Ptree, parent, kids,             offspr, offsprNr, invCost, dLossPenalty, PCtree, dmean, dvar, F0return, Fdreturn, affine_xreturn, affineXiTreeSolTime, instance);
-  affineXiObj[instance,1] =         affineXi(numNodes, numSupplyNodes, numCapacityGroups, capCostFull, capPathsFull, Γ, Atree, Pfull, Ptree, parent, kids, offsprFull, offspr, offsprNr, invCost, dLossPenalty, PCfull, dmean, dvar, F0return, Fdreturn, affine_xreturn, affineXiSolTime,     instance);
+  affineXiTreeObj[instance,1] = affineXiTree(numNodes, numSupplyNodes, numCapacityGroups, capCostTree, capPathsTree, Γ, Atree, Ptree, Ptree, parent, kids,             offspr, offsprNr, invCost, dLossPenalty, PCtree, dmean, dvar, dvar2, p_low, p_high, F0return, Fdreturn, affine_xreturn, affineXiTreeSolTime, instance);
+  affineXiObj[instance,1] =         affineXi(numNodes, numSupplyNodes, numCapacityGroups, capCostFull, capPathsFull, Γ, Atree, Pfull, Ptree, parent, kids, offsprFull, offspr, offsprNr, invCost, dLossPenalty, PCfull, dmean, dvar, dvar2, p_low, p_high, F0return, Fdreturn, affine_xreturn, affineXiSolTime,     instance);
 
   # Testing: passing tree into affineXi
   #affineXiObj[instance,1] =         affineXi(numNodes, numSupplyNodes, Γ, Atree, Ptree, Ptree, parent, kids, offspr, offspr, offsprNr, invCost, dLossPenalty, PCtree, dmean, dvar, F0return, Fdreturn, affine_xreturn, affineXiSolTime,     instance);
