@@ -369,7 +369,7 @@ for instance=1:numInstances
                  instance, ", ", numNodes, ", ", numLevels, ", ", intensity, ", ", h_low, ", ",
                  h_high, ", ", f_root, ", ", survivability, ", ", pArc, ", ", numTreeArcs, ", ",
                  numFullArcs, ", ", numCapacityGroups, ", ", α, sum(dvar)/numDemandNodes, ", ",
-                 sum(dvar2)/numDemandNodes, , ", ", sum(p_low)/numDemandNodes, ", ", sum(p_high)/numDemandNodes))
+                 sum(dvar2)/numDemandNodes, ", ", sum(p_low)/numDemandNodes, ", ", sum(p_high)/numDemandNodes))
 
 end
 
