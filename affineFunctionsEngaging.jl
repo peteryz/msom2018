@@ -858,8 +858,8 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   # Set up variables
   @variable(model, x[1:n] >= 0); # inventory decisions
   @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
-  @constraint(model, price_lever >= 0) # price
-  @constraint(model, price_lever <= 1) # price
+  @constraint(model, price_lever .>= 0) # price
+  @constraint(model, price_lever .<= 1) # price
 
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
@@ -1184,8 +1184,8 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   # Set up variables
   @variable(model, x[1:n] >= 0); # inventory decisions
   @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
-  @constraint(model, price_lever >= 0) # price
-  @constraint(model, price_lever <= 1) # price
+  @constraint(model, price_lever .>= 0) # price
+  @constraint(model, price_lever .<= 1) # price
 
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
