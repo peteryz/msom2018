@@ -47,7 +47,7 @@ for instance=1:numInstances
   # 10% chance, demand > 440
   # Actual average daily demand in week_1 (June 27 - July 2) is 139
   Dlow = 0
-  Dhigh = 350
+  Dhigh = 80
   # Based on actual demand, then, for example
   # Dlow = 20
   # Dhigh = 260
@@ -76,7 +76,7 @@ for instance=1:numInstances
   numSupplyNodes = length(find(supplyNodes))
   numDemandNodes = length(find(demandNodes))
 
-  b = 1500 # demand loss penalty
+  b = PHigh * 1.5 * rand() # demand loss penalty
   h_low = (b-1)*rand()*0.1
   #h_high = h_low + (b-h_low)*rand()
   h_high = (b-1)*rand()*0.1 + (b-1)*0.1
@@ -145,12 +145,12 @@ for instance=1:numInstances
 
   dmean = zeros(numNodes);
   for i in find(demandNodes)
-    dmean[i] = Dlow * 1.0 / numDemandNodes * rand() * 2
+    dmean[i] = Dlow * (0.8 + 0.2 * rand())
   end
 
   dvar = zeros(numNodes);
   for i in find(demandNodes)
-    dvar[i] = (Dhigh - Dlow) / (numDemandNodes * intensity) * rand()
+    dvar[i] = Dhigh * (0.8 + 0.2 * rand())
   end
 
   dvar2 = zeros(numNodes)
