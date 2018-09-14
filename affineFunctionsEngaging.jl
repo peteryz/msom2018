@@ -860,6 +860,7 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
   @constraint(model, price_lever .>= 0) # price
   @constraint(model, price_lever .<= 1) # price
+  @variable(model, revenue >= 0) # price related: revenue variable for epi format objective
 
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
@@ -970,13 +971,15 @@ function affineXiTree(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P,
   #### YES delay penalty ####
   @constraint(model, z >= sum([(ξ[j]*Sd["$(j)"] + S0["$(j)"]) * b[j] for j=(nS+1):n]) +  sum([sum([(P[i,j]==1 ? (ξ[j]*Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"])*c[i,j] : 0) for j=(nS+1):n]) for i=1:n])) # with delay penalty
 
+  @constraint(model, revenue <= sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n]))
+
   # We will use the non-macro version of setObjective, although
   # we could use the macro version if we wanted to.
   # Remember: objectives must be certain.
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
                         + z
-                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
+                        - revenue) # price: revenue adjusted
 
 
   tic()
@@ -1186,6 +1189,7 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
   @constraint(model, price_lever .>= 0) # price
   @constraint(model, price_lever .<= 1) # price
+  @variable(model, revenue >= 0)
 
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
   FdIndices = String[]
@@ -1304,6 +1308,8 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   #### YES delay penalty ####
   @constraint(model, z >= sum([(ξ[j]*Sd["$(j)"] + S0["$(j)"]) * b[j] for j=(nS+1):n]) +  sum([sum([(P[i,j]==1 ? (ξ[j]*Fd["$(i)_$(j)_$(j)"] + F0["$(i)_$(j)"])*c[i,j] : 0) for j=(nS+1):n]) for i=1:n])) # with delay penalty
 
+  @constraint(model, revenue <= sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n]))
+
   # We will use the non-macro version of setObjective, although
   # we could use the macro version if we wanted to.
   # Remember: objectives must be certain.
@@ -1311,7 +1317,7 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   @objective(model, :Min, sum([h[i]*x[i] for i=1:n])
                         + sum([capCost[g]*cap[g] for g=1:numCapacityGroups])
                         + z
-                        - sum([p_low[i]*dmean[i]+(p_high[i]-p_low[i])*dmean[i]*price_lever[i]-p_high[i]*dvar2[i]*price_lever[i]+p_low[i]*dvar[i]*ξ[i]+(p_high[i]-p_low[i])*dvar[i]*price_lever[i]*ξ[i] for i=1:n])) # price: revenue adjusted
+                        - revenue) # price: revenue adjusted
 
   tic()
   status = solve(model)
