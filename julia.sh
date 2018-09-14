@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=jl-OVP
+#SBATCH --job-name=jl-3-OVP+elas
 #SBATCH --output=julia_log.txt
 #SBATCH --err=julia_err.txt
 #SBATCH -p sched_mit_sloan_batch

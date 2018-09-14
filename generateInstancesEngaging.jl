@@ -47,7 +47,7 @@ for instance=1:numInstances
   # 10% chance, demand > 440
   # Actual average daily demand in week_1 (June 27 - July 2) is 139
   Dlow = 0
-  Dhigh = 80
+  Dhigh = 66
   # Based on actual demand, then, for example
   # Dlow = 20
   # Dhigh = 260
@@ -155,7 +155,7 @@ for instance=1:numInstances
 
   dvar2 = zeros(numNodes)
   for i in find(demandNodes)
-    dvar2[i] = 0
+    dvar2[i] = 14 * (0.8 + 0.2 * rand())
   end
 
   p_low = zeros(numNodes)
