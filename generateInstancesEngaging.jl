@@ -46,8 +46,8 @@ for instance=1:numInstances
   # 90% chance, demand > 40
   # 10% chance, demand > 440
   # Actual average daily demand in week_1 (June 27 - July 2) is 139
-  Dlow = 0
-  Dhigh = 66
+  Dlow = 60
+  Dhigh = 6
   # Based on actual demand, then, for example
   # Dlow = 20
   # Dhigh = 260
