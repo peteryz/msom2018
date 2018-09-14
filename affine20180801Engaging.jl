@@ -14,7 +14,7 @@ engagingDir = "IO/"
 #srand(314);
 tempDir = engagingDir;
 cleanDir = engagingDir;
-numInstances = 300;
+numInstances = 100;
 numNodesList = zeros(numInstances);
 affineObj = zeros(numInstances,2); # first column for tree network, second for general network based on this tree
 affineSolTime = zeros(numInstances);

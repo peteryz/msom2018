@@ -16,7 +16,7 @@ engagingDir = "IO/"
 #srand(314);
 tempDir = engagingDir;
 cleanDir = engagingDir;
-numInstances = 1000;
+numInstances = 100;
 numNodesList = zeros(numInstances);
 affineObj = zeros(numInstances,2); # first column for tree network, second for general network based on this tree
 affineSolTime = zeros(numInstances);
@@ -46,11 +46,14 @@ for instance=1:numInstances
   # 90% chance, demand > 40
   # 10% chance, demand > 440
   # Actual average daily demand in week_1 (June 27 - July 2) is 139
-  Dlow = 40
-  Dhigh = 440
+  Dlow = 0
+  Dhigh = 350
   # Based on actual demand, then, for example
   # Dlow = 20
   # Dhigh = 260
+
+  PLow = 1383
+  PHigh = 1418
 
   intensity = rand(); # 0 to 1, fraction of kids being impacted
 
@@ -73,7 +76,7 @@ for instance=1:numInstances
   numSupplyNodes = length(find(supplyNodes))
   numDemandNodes = length(find(demandNodes))
 
-  b = 100 # demand loss penalty
+  b = 1500 # demand loss penalty
   h_low = (b-1)*rand()*0.1
   #h_high = h_low + (b-h_low)*rand()
   h_high = (b-1)*rand()*0.1 + (b-1)*0.1
@@ -152,14 +155,14 @@ for instance=1:numInstances
 
   dvar2 = zeros(numNodes)
   for i in find(demandNodes)
-    dvar2[i] = (Dhigh - Dlow) / (numDemandNodes * intensity) * rand()
+    dvar2[i] = 0
   end
 
   p_low = zeros(numNodes)
   p_high = zeros(numNodes)
   for i in find(demandNodes)
-    p_low[i] = rand() * 100
-    p_high[i] = p_low[i] * (1 + rand() * 0.5)
+    p_low[i] = PLow * (0.99 + rand() * 0.02)
+    p_high[i] = PHigh * (0.99 + rand() * 0.02)
   end
 
   dLossPenalty = b * ones(numNodes)
