@@ -1189,7 +1189,7 @@ function affineXi(n, nS, numCapacityGroups, capCost, capPaths, Γ, Atree, P, Ptr
   @variable(model, price_lever[1:n]) # binary price decisions (relaxed to be between p_low and p_high)
   @constraint(model, price_lever .>= 0) # price
   @constraint(model, price_lever .<= 1) # price
-  @constraint(model, price_lever .== 1) # price - for case 3. in previous 2 cases without this, should choose 1 to maximize revenue
+  #@constraint(model, price_lever .== 1) # price - for case 3 only. in previous 2 cases without this, should choose 1 to maximize revenue
   @variable(model, revenue >= 0)
 
   @variable(model, cap[1:numCapacityGroups] >= 0) ## generalized capacity
